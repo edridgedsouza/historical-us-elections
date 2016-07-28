@@ -100,3 +100,4 @@ write.table(
     quote = F,
     sep = "\t"
 )
+saveRDS(fullTable, file="./data/fullTable.RDS")
