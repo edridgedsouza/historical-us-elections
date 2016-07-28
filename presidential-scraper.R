@@ -8,8 +8,7 @@ scrapeTable <- function(scrapeYear) {
     pagebase <- "http://www.presidency.ucsb.edu/showelection.php?year="
     page <- read_html(paste0(pagebase, as.character(scrapeYear)))
     
-    
-    
+    # Ugly raw table from scraping. We trim it a bit
     parseTable <- page %>%
         html_nodes(xpath = "/html/body/table/tr[2]/td/table/tr/td[2]/table/tr[2]/td/center/table/tr[position() >= 1 and not(position() > 61)]") %>%
         html_text %>% as.data.frame %>%
@@ -21,9 +20,8 @@ scrapeTable <- function(scrapeYear) {
     parseTable <- parseTable[tableStart:tableEnd,]
     
     
-    findParty <-
+    findParty <- # Accepts character vectors, returns if there's even 1 match of the party name in first 10 rows/columns. Unnecessarily long search but it doesn't hurt
         function(x) {
-            # Accepts character vectors, returns if there's even 1 match of the party name in first 10 rows/columns. Unnecessarily long search but it doesn't hurt
             if (lapply(parseTable[1:10, 1:10], function(y)
                 grepl("republican", tolower(y))) %>% lapply(any) %>% as.logical %>% any)
                 return("Republican")
@@ -31,14 +29,15 @@ scrapeTable <- function(scrapeYear) {
                 grepl("democrat", tolower(y))) %>% lapply(any) %>% as.logical %>% any)
                 return("Democrat")
             else
-                return("Other") # Not really necessary but we'll keep it
+                return("Other") # Not really necessary but we'll keep it because useful for debugging
         }
     
-    extractPercents <- function(x) {
-        return(gsub("%", "", x) %>% as.numeric)
-    }
+    # extractPercents <- function(x) { # Not used in final code but keeping here as a record
+    #     return(gsub("%", "", x) %>% as.numeric)
+    # }
     
     
+    # Now, some operations to change raw scraper results to workable table
     prettyTable <- parseTable %>% select(1, 2, 4, 7)
     prettyTable <-
         prettyTable[-c(1:which(grepl("Alabama", parseTable[, 1])) - 1), ] #%>%
@@ -62,10 +61,9 @@ scrapeTable <- function(scrapeYear) {
         )
     remove(i)
     
-    
-    
+  
+    # Final cosmetic edits before returning the final table
     names(prettyTable) <-
-        #### FIX!!! Make it dynamic so the column doesn't matter. Read first row and see which party comes first.
         c("State",
           "Votes",
           firstCol,
@@ -79,8 +77,11 @@ scrapeTable <- function(scrapeYear) {
     return(prettyTable)
 }
 
-yearList <-
-    seq(2012, 1960,-4) # Alaska statehood in 1959. DC got electoral vote in 1961. The sixth party system was from 1969 to now.
+# Alaska statehood in 1959. 
+# DC got electoral vote in 1961. 
+# The sixth party system was from 1969 to now.
+# For somewhat relevant data, I'm scraping from 1960 to 2012.
+yearList <- seq(2012, 1960,-4) 
 
 fullTable <- NULL
 for (i in seq_along(yearList)) {
@@ -88,6 +89,8 @@ for (i in seq_along(yearList)) {
 }
 fullTable <- rbindlist(fullTable)
 
+
+# Export our final large table as a TSV and as an R-ready RDS binary
 this.dir <- dirname(parent.frame(2)$ofile)
 setwd(this.dir)
 dir.create(file.path("./data"), showWarnings = FALSE)
