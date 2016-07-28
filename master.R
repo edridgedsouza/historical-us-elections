@@ -7,5 +7,6 @@ setwd(this.dir)
 
 files <- c("presidential-scraper.R")
 
-lapply(files, function(x) source(x,local=TRUE))
 
+# Source locally. Transfer only necessary variables using RSD
+lapply(files, function(x) source(x,local=TRUE)) %>% invisible
