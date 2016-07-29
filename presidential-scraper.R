@@ -12,7 +12,7 @@ scrapeTable <- function(scrapeYear) {
     
     # Ugly raw table from scraping. We trim it a bit
     parseTable <- page %>%
-        html_nodes(xpath = "/html/body/table/tr[2]/td/table/tr/td[2]/table/tr[2]/td/center/table/tr[position() >= 1 and not(position() > 61)]") %>%
+        html_nodes(xpath = "/html/body/table/tr[2]/td/table/tr/td[2]/table/tr[2]/td/center/table/tr[position() >= 1 and not(position() > 61)]") %>% # Chrome allows you to copy xpath of element, but remember to remove all `tbody` elements that get auto-inserted
         html_text %>% as.data.frame %>%
         cSplit(".", "\r", stripWhite = F)
     parseTable <-
@@ -22,12 +22,12 @@ scrapeTable <- function(scrapeYear) {
     parseTable <- parseTable[tableStart:tableEnd,]
     
     
-    findParty <- # Accepts character vectors, returns if there's even 1 match of the party name in first 10 rows/columns. Unnecessarily long search but it doesn't hurt
+    findParty <- # Accepts character vectors, returns if there's even 1 match of the party name in first 10 rows. Unnecessarily long search but it doesn't hurt
         function(x) {
-            if (lapply(parseTable[1:10, 1:10], function(y)
+            if (lapply(x, function(y)
                 grepl("republican", tolower(y))) %>% lapply(any) %>% as.logical %>% any)
                 return("Republican")
-            if (lapply(parseTable[1:10, 1:10], function(y)
+            if (lapply(x, function(y)
                 grepl("democrat", tolower(y))) %>% lapply(any) %>% as.logical %>% any)
                 return("Democrat")
             else
@@ -50,11 +50,11 @@ scrapeTable <- function(scrapeYear) {
     # Because the website has inconsistent design practices,
     # we can't just hard-link whether the Democrats or Republicans come first.
     # Instead, we'll comb through the first row of parseTable to determine the order
-    for (i in 1:length(parseTable[1,])) {
-        if (findParty(parseTable) != "Other")
+    for (i in 1:length(parseTable[1:10,])) {
+        if (findParty(parseTable[1:10, ][i]) != "Other")
             break
     }
-    firstCol <- findParty(parseTable[1, i] %>% as.character)
+    firstCol <- findParty(parseTable[1:10, ][i] %>% as.character)
     secondCol <-
         ifelse(
             firstCol == "Democrat",
@@ -106,6 +106,3 @@ write.table(
     sep = "\t"
 )
 saveRDS(fullTable, file="./data/fullTable.RDS")
-
-
-# To do: add a .txt file explaining the variables of the table.
