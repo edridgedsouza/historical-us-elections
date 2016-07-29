@@ -1,3 +1,5 @@
+# Script to scrape election data from UCSB website
+
 library(xml2)
 library(rvest)
 library(dplyr)
@@ -104,3 +106,6 @@ write.table(
     sep = "\t"
 )
 saveRDS(fullTable, file="./data/fullTable.RDS")
+
+
+# To do: add a .txt file explaining the variables of the table.

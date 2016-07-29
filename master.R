@@ -5,7 +5,8 @@
 this.dir <- dirname(parent.frame(2)$ofile)
 setwd(this.dir)
 
-files <- c("presidential-scraper.R")
+files <- c("presidential-scraper.R",
+           "prep-election-data.R")
 
 
 # Source locally. Transfer only necessary variables using RSD
