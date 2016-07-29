@@ -1,0 +1,7 @@
+Explanation of data:
+
+electionData.tsv
+Year - Year of election data
+State - Data for particular state
+Votes - Total votes in state during year
+Democrat/Republican - Percent of votes (out of 100) going to either major party.
